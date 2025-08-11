@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,8 +27,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -44,6 +49,8 @@ import com.example.clazzi.model.VoteOption
 import com.example.clazzi.ui.theme.ClazziTheme
 import com.example.clazzi.util.formatDate
 import com.example.clazzi.viewmodel.VoteListViewModel
+import com.google.firebase.auth.FirebaseAuth
+import java.nio.file.WatchEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,29 +98,42 @@ fun VoteItem(
     vote: Vote,
     onVoteClicked: (String) -> Unit
 ) {
-    Card {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-//                            .clickable { navController.navigate("vote") }
-                .clickable { onVoteClicked(vote.id) }
-                .padding(16.dp)
-        )
-        {
-            Text(
-                vote.title,
-                style = MaterialTheme.typography.titleMedium
+    val user = FirebaseAuth.getInstance().currentUser
+    val currentUserId = user?.uid ?: "0"
+
+    // hasVoted 상태 : 사용자가 투표햇는지 판다
+    var hasVoted by remember { mutableStateOf(false) }
+    LaunchedEffect(vote) {
+        hasVoted = vote.voteOptions.any {
+            option -> option.voters.contains(currentUserId)
+        }
+    }
+    Card (modifier = Modifier.fillMaxWidth().clickable { onVoteClicked(vote.id) }){
+        Row (modifier = Modifier.padding(16.dp)){
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    //                            .clickable { navController.navigate("vote") }
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "생성일 : ${formatDate(vote.createAt)}",
-                style = MaterialTheme.typography.bodySmall
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "항목 개수 : ${vote.optionCount}",
-                style = MaterialTheme.typography.bodySmall
-            )
+            {
+                Text(
+                    vote.title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "생성일 : ${formatDate(vote.createAt)}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "항목 개수 : ${vote.optionCount}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            // 투표 여부
+            Text(if(hasVoted) "투표함" else "투표하기")
         }
     }
 

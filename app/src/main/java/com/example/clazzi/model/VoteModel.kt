@@ -1,6 +1,5 @@
 package com.example.clazzi.model
 
-import android.net.Uri
 import java.util.Date
 
 data class Vote(
@@ -8,7 +7,8 @@ data class Vote(
     val title: String = "",
     val createAt: Date? = null,
     val voteOptions: List<VoteOption> = emptyList<VoteOption>(),
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val deadline: Date? = null,
 ){
     val optionCount: Int // 투표 세부 항목 개 수
         get() = voteOptions.size

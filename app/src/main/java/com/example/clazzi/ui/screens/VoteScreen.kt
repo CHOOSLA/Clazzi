@@ -26,7 +26,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -54,12 +53,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.clazzi.model.Vote
+import com.example.clazzi.util.formatDate
 import com.example.clazzi.viewmodel.VoteListViewModel
 import com.example.clazzi.viewmodel.VoteViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import java.nio.file.WatchEvent
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,12 +84,15 @@ fun VoteScreen(voteId: String, navController: NavController, voteListViewModel: 
         }
     }
 
-    // 전체 투푯
+    // 전체 투표수
     val totalVotes = vote?.voteOptions?.sumOf { it.voters.size } ?: 1
 
     var selectionOption by remember { mutableStateOf(0) }
 
     var coroutineScope = rememberCoroutineScope()
+
+    // 투표 마감
+    var isBeforeDeadline by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -115,6 +117,12 @@ fun VoteScreen(voteId: String, navController: NavController, voteListViewModel: 
                 CircularProgressIndicator()
             }
         } else {
+            LaunchedEffect(vote.deadline) {
+                isBeforeDeadline = vote.deadline?.let {
+                    Date().before(it)
+                } ?: false
+
+            }
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -158,6 +166,14 @@ fun VoteScreen(voteId: String, navController: NavController, voteListViewModel: 
                         .size(120.dp)
                         .clip(CircleShape)
                         .background(Color.LightGray)
+                )
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    text = if (isBeforeDeadline) {
+                        "투표 마감: ${formatDate(vote.deadline)}"
+                    } else {
+                        "투표 마감"
+                    }
                 )
                 Spacer(Modifier.height(20.dp))
 
@@ -259,17 +275,23 @@ fun VoteScreen(voteId: String, navController: NavController, voteListViewModel: 
                                     if (index == selectionOption) updatedOption else option
                                 }
                                 val updatedVote = vote.copy(
-                                    voteOptions = updatedOptions
+                                    voteOptions = updatedOptions,
                                 )
 
                                 voteListViewModel.setVote(updatedVote)
                             }
                         }
                     },
-                    enabled = !hasVoted,
+                    enabled = !hasVoted && isBeforeDeadline,
                     modifier = Modifier.width(200.dp)
                 ) {
-                    Text(if(!hasVoted) "투표하기" else "이미 투표했습니다." )
+                    Text(
+                        if (!isBeforeDeadline) {
+                            "투표마감"
+                        } else if (hasVoted) {
+                            "투표함"
+                        } else "이미 투표했습니다."
+                    )
                 }
 
             }

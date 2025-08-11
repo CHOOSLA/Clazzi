@@ -5,16 +5,11 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.clazzi.model.Vote
-import com.example.clazzi.model.VoteOption
 import com.example.clazzi.ui.screens.AuthScreen
 import com.example.clazzi.ui.screens.CreateVoteScreen
 import com.example.clazzi.ui.screens.VoteListScreen
@@ -69,16 +64,21 @@ class MainActivity : ComponentActivity() {
                     composable("vote/{voteId}") { backStackEntry ->
                         val voteId = backStackEntry.arguments?.getString("voteId") ?: "1"
                         val vote = viewListViewModel.getVoteById(voteId)
-                        if (vote != null) {
-                            VoteScreen(
-                                vote = vote,
-                                navController = navController,
-                                viewModel = viewListViewModel
-                            )
-                        } else {
-                            val context = LocalContext.current
-                            Toast.makeText(context, "해당 투표가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
-                        }
+                        VoteScreen(
+                            voteId = voteId,
+                            navController = navController,
+                            voteListViewModel = viewListViewModel
+                        )
+//                        if (vote != null) {
+//                            VoteScreen(
+//                                voteId = voteId,
+//                                navController = navController,
+//                                voteListViewModel = viewListViewModel
+//                            )
+//                        } else {
+//                            val context = LocalContext.current
+//                            Toast.makeText(context, "해당 투표가 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
+//                        }
 
                     }
 

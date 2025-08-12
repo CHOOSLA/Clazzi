@@ -90,4 +90,22 @@ class FirebaseVoteRepository : VoteRepository {
 
         }
     }
+
+    override fun observeVoteById(voteId: String): Flow<Vote?> = callbackFlow{
+        val listener = db.collection("votes")
+            .document(voteId)
+            .addSnapshotListener { snapshot, error ->
+                if(error!=null){
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                if(snapshot != null && snapshot.exists()){
+                    trySend(snapshot.toObject(Vote::class.java))
+                }else
+                        trySend(null)
+            }
+
+        awaitClose { listener.remove() }
+    }
 }

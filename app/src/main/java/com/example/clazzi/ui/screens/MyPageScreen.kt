@@ -1,5 +1,6 @@
 package com.example.clazzi.ui.screens
 
+import android.net.http.SslCertificate.saveState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -22,10 +23,18 @@ fun MyPageScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally) {
             Button(onClick = {
                 auth.signOut()
+//                navController.navigate("auth"){
+//                    popUpTo(0){ inclusive = true} // 전체 스택 제거
+//                    launchSingleTop = true // 중복방지
+//                }
+
                 navController.navigate("auth"){
-                    popUpTo(0){ inclusive = true} // 전체 스택 제거
-                    launchSingleTop = true // 중복방지
+                    popUpTo(navController.graph.startDestinationId) {
+                        saveState = false
+                    }
                 }
+
+
             }) {
                 Text("로그아웃")
             }

@@ -42,6 +42,9 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.material:material:1.6.8")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0") // Retrofit
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0") // Gson 변환기
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
     implementation("com.google.firebase:firebase-auth:22.3.0")

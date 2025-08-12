@@ -65,8 +65,8 @@ import kotlin.math.log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VoteScreen(voteId: String, navController: NavController, voteListViewModel: VoteListViewModel) {
-    val voteViewModel: VoteViewModel = viewModel()
+fun VoteScreen(voteId: String, navController: NavController, voteViewModel: VoteViewModel ,voteListViewModel: VoteListViewModel) {
+//    val voteViewModel: VoteViewModel = viewModel()
 
     // 초기 데이터 로드
     LaunchedEffect(voteId) {

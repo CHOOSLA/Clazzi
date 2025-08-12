@@ -95,7 +95,7 @@ fun AuthScreen(navController: NavController) {
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if(task.isSuccessful){
-                                    navController.navigate("voteList")
+                                    navController.navigate("main")
                                 }else{
                                     Log.w("Firebase", "createUserWithEmail:failure", task.exception)
                                 }
@@ -104,7 +104,7 @@ fun AuthScreen(navController: NavController) {
                         auth.createUserWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if(task.isSuccessful){
-                                    navController.navigate("voteList")
+                                    navController.navigate("main")
                                 }else{
                                     Log.w("Firebase", "createUserWithEmail:failure", task.exception)
                                 }

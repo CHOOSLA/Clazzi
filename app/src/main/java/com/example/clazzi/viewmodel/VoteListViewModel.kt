@@ -2,32 +2,24 @@ package com.example.clazzi.viewmodel
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clazzi.model.Vote
-import com.example.clazzi.model.VoteOption
 import com.example.clazzi.repository.FirebaseVoteRepository
 import com.example.clazzi.repository.VoteRepository
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import java.util.UUID
 
 
-class VoteListViewModel: ViewModel() {
+class VoteListViewModel(repository: VoteRepository) : ViewModel() {
     val db = Firebase.firestore
     private val _voteList = MutableStateFlow<List<Vote>>(emptyList())
     val voteList: StateFlow<List<Vote>> = _voteList
 
-    val voteRepository : VoteRepository = FirebaseVoteRepository()
+    val voteRepository: VoteRepository = repository
 
     init {
         // 뷰모델 초기화 시 실시간 리스너 설정

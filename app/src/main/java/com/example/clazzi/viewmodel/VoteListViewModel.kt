@@ -82,56 +82,13 @@ class VoteListViewModel: ViewModel() {
     fun addVote(vote: Vote, context: Context, imageUri: Uri) {
 //        _voteList.value += vote
         viewModelScope.launch {
-            try {
-                val storageRef = FirebaseStorage.getInstance().reference
-                val imageRef = storageRef.child("images/${UUID.randomUUID()}.jpg")
-
-                // 이미지 업로드
-                val inputStream = context.contentResolver.openInputStream(imageUri)
-                val uploadTask = inputStream?.let {imageRef.putStream(it).await()}
-
-                // 다운로드 URL 가져오기
-                val downloadUrl = imageRef.downloadUrl.await().toString()
-
-                // Firestore에 업로드할 데이터 구성
-                val voteMap = hashMapOf(
-                    "id" to vote.id,
-                    "title" to vote.title,
-                    "imageUrl" to downloadUrl, // 이미지 URL 추가
-                    "createAt" to vote.createAt, // 서버 타임으로 설정 "createAt" to FieldValue.serverTimestamp(),
-                    "voteOptions" to vote.voteOptions.map {
-                        hashMapOf(
-                            "id" to it.id,
-                            "optionText" to it.optionText,
-                        )
-                    },
-                    "deadline" to vote.deadline
-                )
-
-                // Firestore에 저장
-                db.collection("votes")
-                    .document(vote.id)
-                    .set(voteMap)
-                    .await()
-            } catch (e: Exception) {}
-            // 에러 처리 (예: 사용자에게 토스트 메시지 표시)
+            voteRepository.addVote(vote,context,imageUri)
         }
     }
 
     fun setVote(vote: Vote) {
         viewModelScope.launch {
-            try{
-                db.collection("votes")
-                    .document(vote.id)
-                    .set(vote)
-                    .await()
-                Log.d("FireStore", "투표 성공")
-
-            }
-            catch (e: Exception) {
-                Log.e("FireStore", "투표 실패 에러 발생")
-
-            }
+            voteRepository.setVote(vote)
 
         }
     }

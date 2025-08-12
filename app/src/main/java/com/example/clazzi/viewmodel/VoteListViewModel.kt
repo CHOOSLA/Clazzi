@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.clazzi.model.Vote
 import com.example.clazzi.model.VoteOption
+import com.example.clazzi.repository.FirebaseVoteRepository
+import com.example.clazzi.repository.VoteRepository
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
@@ -25,19 +27,27 @@ class VoteListViewModel: ViewModel() {
     private val _voteList = MutableStateFlow<List<Vote>>(emptyList())
     val voteList: StateFlow<List<Vote>> = _voteList
 
+    val voteRepository : VoteRepository = FirebaseVoteRepository()
+
     init {
         // 뷰모델 초기화 시 실시간 리스너 설정
-        db.collection("votes")
-            .orderBy("createAt", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if(error != null) {
-                    Log.e("FireStore", "Error getting votes", error)
-                    return@addSnapshotListener
-                }
-                if (snapshot != null) {
-                    _voteList.value = snapshot.toObjects(Vote::class.java)
-                }
+//        db.collection("votes")
+//            .orderBy("createAt", Query.Direction.DESCENDING)
+//            .addSnapshotListener { snapshot, error ->
+//                if(error != null) {
+//                    Log.e("FireStore", "Error getting votes", error)
+//                    return@addSnapshotListener
+//                }
+//                if (snapshot != null) {
+//                    _voteList.value = snapshot.toObjects(Vote::class.java)
+//                }
+//            }
+
+        viewModelScope.launch {
+            voteRepository.observeVotes().collect { votes ->
+                _voteList.value = votes;
             }
+        }
     }
 
 //    init {
@@ -94,7 +104,8 @@ class VoteListViewModel: ViewModel() {
                             "id" to it.id,
                             "optionText" to it.optionText,
                         )
-                    }
+                    },
+                    "deadline" to vote.deadline
                 )
 
                 // Firestore에 저장

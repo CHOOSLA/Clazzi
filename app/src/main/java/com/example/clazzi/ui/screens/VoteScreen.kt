@@ -1,5 +1,6 @@
 package com.example.clazzi.ui.screens
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -59,6 +61,7 @@ import com.example.clazzi.viewmodel.VoteViewModel
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import java.util.Date
+import kotlin.math.log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,6 +107,28 @@ fun VoteScreen(voteId: String, navController: NavController, voteListViewModel: 
                             contentDescription = "뒤로가기"
                         )
                     }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            if (vote != null) {
+
+                                val voteUrl = "https://clazzi-54344.web.app/vote/${vote.id}"
+                                val sendIntent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_TEXT, voteUrl)
+                                    type = "text/plain"
+                                }
+                                navController.context.startActivity(
+                                    Intent.createChooser(
+                                        sendIntent,
+                                        "투표공유"
+                                    )
+                                )
+                            }
+
+                        }
+                    ) { Icon(Icons.Default.Share, contentDescription = "투표공유") }
                 })
         },
     ) { innerPadding ->
@@ -290,7 +315,7 @@ fun VoteScreen(voteId: String, navController: NavController, voteListViewModel: 
                             "투표마감"
                         } else if (hasVoted) {
                             "투표함"
-                        } else "이미 투표했습니다."
+                        } else "투표하기"
                     )
                 }
 

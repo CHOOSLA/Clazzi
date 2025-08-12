@@ -5,6 +5,7 @@ import android.app.TimePickerDialog
 import android.net.Uri
 import android.widget.DatePicker
 import android.widget.TimePicker
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -190,6 +191,11 @@ fun CreateVoteScreen(
 
             Button(
                 onClick = {
+                    if (imageUri == null) {
+                        Toast.makeText(navController.context, "이미지를 선택해주세요", Toast.LENGTH_SHORT)
+                            .show()
+                        return@Button
+                    }
                     val newVote = Vote(
                         id = UUID.randomUUID().toString(),
                         title = title,
@@ -228,7 +234,8 @@ fun DeadlineDateTimePicker(
 
     // 화면에 보여줄 문자열 (포맷팅)
     val displayText = deadline?.let {
-        SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(it)} ?: ""
+        SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(it)
+    } ?: ""
 
 
     val dataPickerDialog = remember {
@@ -236,7 +243,7 @@ fun DeadlineDateTimePicker(
             context,
             { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
                 calender.set(Calendar.YEAR, year)
-                calender.set(Calendar.MONTH, year)
+                calender.set(Calendar.MONTH, month)
                 calender.set(Calendar.DAY_OF_MONTH, dayOfMonth)
 
                 TimePickerDialog(
@@ -256,7 +263,7 @@ fun DeadlineDateTimePicker(
             },
             calender.get(Calendar.YEAR),
             calender.get(Calendar.MONTH),
-            calender.get(Calendar.YEAR),
+            calender.get(Calendar.DAY_OF_MONTH),
         )
     }
     OutlinedTextField(
@@ -265,7 +272,7 @@ fun DeadlineDateTimePicker(
         label = { Text("투표 마감일") },
         modifier = Modifier
             .fillMaxWidth()
-            .clickable{dataPickerDialog.show()},
+            .clickable { dataPickerDialog.show() },
         enabled = false,
         readOnly = true
     )

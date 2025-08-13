@@ -55,7 +55,7 @@ import java.nio.file.WatchEvent
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoteListScreen(
-    navController: NavHostController,
+    parentNavController: NavHostController,
     viewModel: VoteListViewModel,
     onVoteClicked: (String) -> Unit
 ) {
@@ -66,7 +66,7 @@ fun VoteListScreen(
                 title = { Text(stringResource(id= R.string.vote_list_title)) },
                 actions = {
                     IconButton(onClick = {
-                        navController.navigate("mypage")
+                        parentNavController.navigate("mypage")
                     }){
                         Icon(imageVector = Icons.Default.Person,
                             contentDescription = "유저")
@@ -76,14 +76,16 @@ fun VoteListScreen(
 
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("createVote") }) {
+            FloatingActionButton(onClick = { parentNavController.navigate("createVote") }) {
                 Icon(Icons.Default.Add, contentDescription = "생성하기")
             }
         }) { innerPadding ->
         LazyColumn(
             modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp),
+                .padding(innerPadding),
+            contentPadding = PaddingValues(16.dp)
+//                .padding(16.dp)
+            ,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(voteList) { vote ->
@@ -140,15 +142,3 @@ fun VoteItem(
 }
 
 
-
-@Preview(showBackground = true)
-@Composable
-fun VoteListScreenPreview() {
-    ClazziTheme {
-        VoteListScreen(
-            navController = NavHostController(LocalContext.current),
-            viewModel = viewModel(),
-            onVoteClicked = {}
-        )
-    }
-}

@@ -1,6 +1,7 @@
 package com.example.clazzi.ui.screens
 
 import android.net.http.SslCertificate.saveState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -20,7 +22,10 @@ fun MyPageScreen(navController: NavController) {
         Column(modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally) {
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center) {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid ?: "닉네임 없음"
+            Text(uid.take(4))
             Button(onClick = {
                 auth.signOut()
 //                navController.navigate("auth"){

@@ -2,6 +2,7 @@ package com.example.clazzi.model
 
 import java.util.Date
 
+// 데이터와 UI 상태를 관리하고, 생명주기 변화에 안전하게 데이터를 보존
 data class Vote(
     val id: String = "",
     val title: String = "",

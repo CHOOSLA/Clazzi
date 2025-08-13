@@ -10,10 +10,13 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +31,7 @@ import com.example.clazzi.repository.FirebaseVoteRepository
 import com.example.clazzi.repository.RestApiVoteRepository
 import com.example.clazzi.repository.network.ApiClient
 import com.example.clazzi.ui.screens.AuthScreen
+import com.example.clazzi.ui.screens.ChatRoomScreen
 import com.example.clazzi.ui.screens.ChatScreen
 import com.example.clazzi.ui.screens.CreateVoteScreen
 import com.example.clazzi.ui.screens.MyPageScreen
@@ -39,11 +43,12 @@ import com.example.clazzi.viewmodel.VoteListViewModelFactory
 import com.example.clazzi.viewmodel.VoteViewModel
 import com.example.clazzi.viewmodel.VoteViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
     object VoteList : BottomNavItem("voteList", Icons.AutoMirrored.Filled.List, "투표")
-    object Chat : BottomNavItem("chat", Icons.AutoMirrored.Filled.List, "채팅")
-    object MyPage : BottomNavItem("mypage", Icons.AutoMirrored.Filled.List, "마이페이지")
+    object Chat : BottomNavItem("chat", Icons.AutoMirrored.Filled.Chat, "채팅")
+    object MyPage : BottomNavItem("mypage", Icons.Default.Person, "마이페이지")
 }
 
 class MainActivity : ComponentActivity() {
@@ -57,6 +62,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 //        enableEdgeToEdge()
         setContent {
+            // 컴포저블에서 상태가 변경될 떄 UI가 갱신이 될 수 있는 이유는 Compost가 상태를 관찰하고 있기 때문
+            // setContent{} 안에 작성되는 모든 스테이트(상태)만 컴포즈에서 관찰이 가능 하다.
             ClazziTheme {
                 val navController = rememberNavController()
 //                val repo = RestApiVoteRepository(ApiClient.voteApiService)
@@ -69,8 +76,19 @@ class MainActivity : ComponentActivity() {
                 val voteViewModel: VoteViewModel = viewModel(
                     factory = VoteViewModelFactory(repo)
                 )
-                val isLoggedIn = FirebaseAuth.getInstance().currentUser != null
 
+                val auth = FirebaseAuth.getInstance()
+                val isLoggedIn = auth.currentUser != null
+
+                // 사용자 등록 ( 앱 시작시 닉네임 저장 )
+                LaunchedEffect(auth.currentUser) {
+                    auth.currentUser?.let { user ->
+                        val nickname = user.uid.take(4)
+                        FirebaseFirestore.getInstance().collection("users")
+                            .document(user.uid)
+                            .set(mapOf("nickname" to nickname))
+                    }
+                }
 
                 NavHost(
                     navController = navController,
@@ -87,7 +105,7 @@ class MainActivity : ComponentActivity() {
 //                    }
 
                     composable("main") {
-                        MainScreen(voteListViewModel)
+                        MainScreen(voteListViewModel, navController)
                     }
 
 
@@ -140,6 +158,21 @@ class MainActivity : ComponentActivity() {
                             navController
                         )
                     }
+
+                    composable("chatRoom/{chatRoomId}/{otherUserId}/{otherUserNickname}") { backStackEntry ->
+                        val chatRoomId = backStackEntry.arguments?.getString("chatRoomId") ?: ""
+                        val otherUserId = backStackEntry.arguments?.getString("otherUserId") ?: ""
+                        val otherUserNickname = backStackEntry.arguments?.getString("otherUserNickname") ?: ""
+                        ChatRoomScreen(
+                            chatRoomId,
+                            otherUserId,
+                            otherUserNickname
+                        )
+                    }
+
+                    composable("mypage") {
+                        MyPageScreen(navController)
+                    }
                 }
             }
         }
@@ -147,13 +180,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(voteListViewModel: VoteListViewModel) {
+fun MainScreen(voteListViewModel: VoteListViewModel, parentNavController: NavHostController) {
     val navController = rememberNavController()
 
     Scaffold(bottomBar = {
+        // 화면 하단에 여러 페이지로 이동하는 탭을 제공
         BottomNavigationBar(navController = navController)
 
     }) { innerPadding ->
+        // 네브호스트 , 네브컨틀로러 : 화면간의 이동을 관리하는 역할
+        // 네브호스트 : 각 화면의 경로를 정해 놓은 곳
         NavHost(
             navController = navController,
             startDestination = "voteList",
@@ -161,10 +197,10 @@ fun MainScreen(voteListViewModel: VoteListViewModel) {
         ) {
             composable(BottomNavItem.VoteList.route) {
                 VoteListScreen(
-                    navController = navController,
+                    parentNavController = navController,
                     viewModel = voteListViewModel,
                     onVoteClicked = { voteId ->
-                        navController.navigate("vote/$voteId")
+                        parentNavController.navigate("vote/$voteId")
 
                     }
                 )
@@ -172,11 +208,22 @@ fun MainScreen(voteListViewModel: VoteListViewModel) {
 
 
             composable(BottomNavItem.Chat.route) {
-                ChatScreen()
+                ChatScreen(parentNavController)
+            }
+
+            composable("chatRoom/{chatRoomId}/{otherUserId}/{otherUserNickname}") { backStackEntry ->
+                val chatRoomId = backStackEntry.arguments?.getString("chatRoomId") ?: ""
+                val otherUserId = backStackEntry.arguments?.getString("otherUserId") ?: ""
+                val otherUserNickname = backStackEntry.arguments?.getString("otherUserNickname") ?: ""
+                ChatRoomScreen(
+                    chatRoomId,
+                    otherUserId,
+                    otherUserNickname
+                )
             }
 
             composable(BottomNavItem.MyPage.route) {
-                MyPageScreen(navController)
+                MyPageScreen(parentNavController)
             }
         }
     }

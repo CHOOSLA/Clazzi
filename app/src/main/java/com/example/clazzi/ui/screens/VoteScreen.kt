@@ -38,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,6 +80,13 @@ fun VoteScreen(voteId: String, navController: NavController, voteViewModel: Vote
     val user = FirebaseAuth.getInstance().currentUser
     val currentUserId = user?.uid ?: "0"
     var hasVoted by remember { mutableStateOf(false) }
+    // remember
+    // 상태가 변하면 컴포넌트를 새로 다시 만든다.
+    // 하지만 이 상태에서 다시 그려진다는 것은 이전의 정보를 잃을 수 있기 때문에
+    // 잃지 않게 저장해놓는다.
+    // Saveable
+    // 컴포넌트 단위가 아닌 화면이 다시 그려진다고 해도 저장됨
+//    var hasVoted by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(vote) {
         if (vote != null) {
             hasVoted = vote.voteOptions.any { option ->

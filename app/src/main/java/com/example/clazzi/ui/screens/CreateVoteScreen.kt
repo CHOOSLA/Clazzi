@@ -55,6 +55,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateVoteScreen(
@@ -73,6 +74,8 @@ fun CreateVoteScreen(
     // 마감일 스테이트
     var deadlineDate by remember { mutableStateOf<Date?>(null) }
 //    val optionText: List<String> = arrayListOf("항목 1", "항목 2")
+
+    // 앱의 기본 레이아웃 구조(탑바, 바텀네비게이션 등)을 제공
     Scaffold(
         topBar = {
             TopAppBar(
@@ -104,6 +107,8 @@ fun CreateVoteScreen(
                     painterResource(id = R.drawable.ic_menu_gallery),
                 contentDescription = "투표 사진",
                 contentScale = ContentScale.Crop,
+                // 모든 컴포저블에서 사용할 수 있다.
+                // 모디파이 : ui요소 크기 배경 정렬 등 속성저장
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
